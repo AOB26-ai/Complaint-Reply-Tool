@@ -1,6 +1,6 @@
 # Complaint Reply Drafter
 
-**Live URL:** _
+**Live URL:** _https://complaint-reply-tool-2.onrender.com
 
 A simple web tool that turns customer complaint messages into professional reply drafts in seconds.
 
@@ -20,7 +20,7 @@ Poor or slow responses to complaints damage reputation and lose repeat customers
 - AI: Groq (`openai/gpt-oss-120b`)  
 - Deployment: Render  
 
-**Live demo:** _
+**Live demo:** _https://complaint-reply-tool-2.onrender.com
 
 ---
 
