@@ -1,0 +1,8 @@
+complaint-reply-tool/
+├── app.py                 
+├── templates/
+│   └── index.html         
+├── requirements.txt
+├── .env
+├── .gitignore
+└── README.md

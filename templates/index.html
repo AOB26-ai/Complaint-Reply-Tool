@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Complaint Reply Drafter</title>
+  <style>
+    :root {
+      --bg: #f7f9fc;
+      --card: #ffffff;
+      --primary: #0f766e;
+      --primary-hover: #0d9488;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --error: #dc2626;
+      --success-bg: #f0fdf4;
+      --success-border: #bbf7d0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      padding: 24px 16px;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    header h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
+
+    header p {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 140px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      resize: vertical;
+      transition: border-color 0.15s;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+    }
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      margin-top: 16px;
+      padding: 12px 20px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    button:hover:not(:disabled) {
+      background: var(--primary-hover);
+    }
+
+    button:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #result {
+      margin-top: 20px;
+      display: none;
+    }
+
+    #result.show { display: block; }
+
+    .reply-box {
+      background: var(--success-bg);
+      border: 1px solid var(--success-border);
+      border-radius: 8px;
+      padding: 16px;
+      white-space: pre-wrap;
+      font-size: 0.95rem;
+      line-height: 1.55;
+    }
+
+    .error-box {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: var(--error);
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 0.9rem;
+    }
+
+    .copy-btn {
+      margin-top: 10px;
+      width: auto;
+      padding: 8px 16px;
+      font-size: 0.85rem;
+      background: #334155;
+    }
+
+    .copy-btn:hover:not(:disabled) {
+      background: #1e293b;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 28px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Complaint Reply Drafter</h1>
+      <p>Paste a customer complaint → get a professional reply draft in seconds</p>
+    </header>
+
+    <div class="card">
+      <label for="complaint">Customer complaint</label>
+      <textarea
+        id="complaint"
+        placeholder="Paste the WhatsApp or email complaint here..."
+        autofocus
+      ></textarea>
+
+      <button id="generateBtn" onclick="generateReply()">
+        Generate Reply
+      </button>
+
+      <div id="result"></div>
+    </div>
+
+    <footer>
+      Built for small Nairobi businesses · Portfolio project
+    </footer>
+  </div>
+
+  <script>
+    async function generateReply() {
+      const complaint = document.getElementById("complaint").value.trim();
+      const btn = document.getElementById("generateBtn");
+      const result = document.getElementById("result");
+
+      if (!complaint) {
+        result.className = "show";
+        result.innerHTML = `<div class="error-box">Please paste a complaint first.</div>`;
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = `<span class="spinner"></span> Generating...`;
+      result.className = "";
+      result.innerHTML = "";
+
+      try {
+        const res = await fetch("/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ complaint }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || "Something went wrong");
+        }
+
+        result.className = "show";
+        result.innerHTML = `
+          <div class="reply-box" id="replyText">${escapeHtml(data.reply)}</div>
+          <button class="copy-btn" onclick="copyReply()">Copy to clipboard</button>
+        `;
+      } catch (err) {
+        result.className = "show";
+        result.innerHTML = `<div class="error-box">${escapeHtml(err.message)}</div>`;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = "Generate Reply";
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function copyReply() {
+      const text = document.getElementById("replyText").innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector(".copy-btn");
+        btn.textContent = "Copied!";
+        setTimeout(() => (btn.textContent = "Copy to clipboard"), 1500);
+      });
+    }
+
+    // Allow Ctrl/Cmd + Enter to generate
+    document.getElementById("complaint").addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        generateReply();
+      }
+    });
+  </script>
+</body>
+</html>
