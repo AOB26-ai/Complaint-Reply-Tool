@@ -1,8 +1,4 @@
-complaint-reply-tool/
-├── app.py                 
-├── templates/
-│   └── index.html         
-├── requirements.txt
-├── .env
-├── .gitignore
-└── README.md
+flask>=3.0.0
+openai>=1.40.0
+gunicorn>=22.0.0
+python-dotenv>=1.0.0
